@@ -82,7 +82,6 @@ class MovieSessionListSerializer(MovieSessionSerializer):
         )
 
 
-
 class TicketDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
