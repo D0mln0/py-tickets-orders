@@ -2,6 +2,7 @@ from django.db.models import Count, F, ExpressionWrapper, IntegerField
 from rest_framework import viewsets
 from django.utils.dateparse import parse_date
 from django.http import request
+from rest_framework.pagination import PageNumberPagination
 
 from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession, Order
 
@@ -18,6 +19,12 @@ from cinema.serializers import (
     OrderPostSerializer,
     OrderListSerializer,
 )
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -117,16 +124,10 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
                 "movie__actors"
             )
 
-    def paginate_queryset(self, queryset):
-        date = self.request.query_params.get("date")
-        movie = self.request.query_params.get("movie")
-        if date or movie:
-            return None
-        return super().paginate_queryset(queryset)
-
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
+    pagination_class = OrderPagination
 
     def get_queryset(self):
         user = self.request.user
