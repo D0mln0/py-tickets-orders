@@ -41,6 +41,7 @@ class MovieViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
+
             return MovieListSerializer
 
         if self.action == "retrieve":
@@ -70,6 +71,14 @@ class MovieViewSet(viewsets.ModelViewSet):
 
         return queryset.distinct()
 
+    def paginate_queryset(self, queryset):
+        actors = self.request.query_params.get("actors")
+        genres = self.request.query_params.get("genres")
+        title = self.request.query_params.get("title")
+        if actors or genres or title:
+            return None
+        return super().paginate_queryset(queryset)
+
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
@@ -77,6 +86,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == "list":
+            print(repr(MovieSessionListSerializer.data))
             return MovieSessionListSerializer
         if self.action == "retrieve":
             return MovieSessionDetailSerializer
@@ -89,7 +99,6 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
                 output_field=IntegerField())
             queryset = (self.queryset.prefetch_related("tickets", "movie")
                         .annotate(
-                capacity=capacity_expr,
                 tickets_available=capacity_expr - Count("tickets")
             ))
             date = self.request.query_params.get("date")
@@ -108,6 +117,13 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
                 "movie__genres",
                 "movie__actors"
             )
+
+    def paginate_queryset(self, queryset):
+        date = self.request.query_params.get("date")
+        movie = self.request.query_params.get("movie")
+        if date or movie:
+            return None
+        return super().paginate_queryset(queryset)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
